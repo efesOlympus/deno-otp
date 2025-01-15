@@ -1,4 +1,4 @@
-import { authenticator } from "https://esm.sh/otplib";
+import { totp } from "https://esm.sh/otplib";
 
 /**
  * Generates the current OTP (One-Time Password) based on the provided secret key.
@@ -16,7 +16,7 @@ export function generateCurrentOtp(secret: string): string {
 
   try {
     // Generate the current OTP
-    const otp = authenticator.generate(secret);
+    const otp = totp.generate(secret);
     console.info("OTP generated successfully.");
     return otp;
   } catch (error) {
