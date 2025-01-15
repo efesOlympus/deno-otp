@@ -1,4 +1,4 @@
-import { createTimeBasedOTP } from "https://deno.land/x/dotp@v0.0.2/mod.ts";
+import { createTimeBasedOTP } from "https://deno.land/x/dotp@v0.0.2/time_based.ts";
 
 /**
  * Generates the current OTP (One-Time Password) based on the provided secret key.
