@@ -1,13 +1,13 @@
-import * as otp from "https://deno.land/x/otp@0.3.0/mod.ts";
+import { Totp, TotpOptions } from "https://deno.land/x/otp@0.3.0/totp.ts";
 
 /**
  * Generates the current OTP (One-Time Password) based on the provided secret key.
  *
  * @param {string} secret - The secret key used for TOTP generation.
- * @returns {string} The current OTP as a string.
+ * @returns {Promise<string>} The current OTP as a string.
  * @throws {Error} If the secret key is empty or OTP generation fails.
  */
-export function generateCurrentOtp(secret: string): string {
+export async function generateCurrentOtp(secret: string): Promise<string> {
   if (!secret) {
     const errorMessage = "The secret key must not be empty.";
     console.error(errorMessage);
@@ -15,8 +15,13 @@ export function generateCurrentOtp(secret: string): string {
   }
 
   try {
+    const totpOptions: TotpOptions = {
+      stepSize: 30, // 30-second time step, standard for TOTP
+    };
+    const totpInstance = new Totp(secret, totpOptions);
+
     // Generate the current OTP
-    const otpCode = otp.TOTP.generate(secret);
+    const otpCode = await totpInstance.generate();
     console.info(`OTP generated successfully: ${otpCode}`);
     return otpCode;
   } catch (error) {
@@ -48,7 +53,7 @@ addEventListener("fetch", async (event) => {
       return;
     }
 
-    const otpCode = generateCurrentOtp(secret);
+    const otpCode = await generateCurrentOtp(secret);
     event.respondWith(
       new Response(JSON.stringify({ otp: otpCode }), {
         status: 200,
