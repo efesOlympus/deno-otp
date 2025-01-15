@@ -17,7 +17,7 @@ export function generateCurrentOtp(secret: string): string {
   try {
     // Generate the current OTP
     const otpCode = otp.TOTP.generate(secret);
-    console.info("OTP generated successfully.");
+    console.info(`OTP generated successfully: ${otpCode}`);
     return otpCode;
   } catch (error) {
     const errorMessage = `Failed to generate OTP: ${error.message}`;
@@ -27,18 +27,27 @@ export function generateCurrentOtp(secret: string): string {
 }
 
 // HTTP handler for Deno Deploy
-addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-  const secret = url.searchParams.get("key");
-
-  if (!secret) {
-    event.respondWith(
-      new Response("Missing 'key' query parameter.", { status: 400 })
-    );
-    return;
-  }
-
+addEventListener("fetch", async (event) => {
   try {
+    const { method } = event.request;
+
+    if (method !== "POST") {
+      event.respondWith(
+        new Response("Method Not Allowed", { status: 405 })
+      );
+      return;
+    }
+
+    const body = await event.request.json();
+    const secret = body.key;
+
+    if (!secret) {
+      event.respondWith(
+        new Response("Missing 'key' in request body.", { status: 400 })
+      );
+      return;
+    }
+
     const otpCode = generateCurrentOtp(secret);
     event.respondWith(
       new Response(JSON.stringify({ otp: otpCode }), {
