@@ -1,4 +1,4 @@
-import { createTimeBasedOTP } from "https://deno.land/x/dotp@v0.0.2/time_based.ts";
+import { createTimeBasedToken } from "https://deno.land/x/dotp@v0.0.2/time_based.ts";
 
 /**
  * Generates the current OTP (One-Time Password) based on the provided secret key.
@@ -16,7 +16,7 @@ export function generateCurrentOtp(secret: string): string {
 
   try {
     // Generate the current OTP
-    const otp = createTimeBasedOTP(secret);
+    const otp = createTimeBasedToken(secret);
     console.info("OTP generated successfully.");
     return otp;
   } catch (error) {
