@@ -36,33 +36,50 @@ addEventListener("fetch", async (event) => {
   try {
     const { method } = event.request;
 
+    // Enforce POST method
     if (method !== "POST") {
-      event.respondWith(
-        new Response("Method Not Allowed", { status: 405 })
-      );
+      event.respondWith(new Response("Method Not Allowed", { status: 405 }));
+      return;
+    }
+
+    // Retrieve the secret authorization key from Deno Deploy environment
+    const expectedAuthKey = Deno.env.get("authKey");
+    if (!expectedAuthKey) {
+      console.error("Authorization key not set in environment variables.");
+      event.respondWith(new Response("Server Configuration Error", { status: 500 }));
+      return;
+    }
+
+    // Validate Authorization header
+    const authHeader = event.request.headers.get("Authorization");
+    if (!authHeader || authHeader !== `Bearer ${expectedAuthKey}`) {
+      event.respondWith(new Response("Unauthorized", { status: 401 }));
       return;
     }
 
     const body = await event.request.json();
     const secret = body.key;
 
-    if (!secret) {
+    // Validate the secret
+    if (!secret || !/^[A-Z2-7]+=*$/.test(secret)) {
       event.respondWith(
-        new Response("Missing 'key' in request body.", { status: 400 })
+        new Response("Invalid or missing 'key' in request body.", { status: 400 })
       );
       return;
     }
 
     const otpCode = await generateCurrentOtp(secret);
+
+    // Respond with the OTP
     event.respondWith(
       new Response(JSON.stringify({ otp: otpCode.replace(/\s+/g, "") }), {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
     );
   } catch (error) {
-    event.respondWith(
-      new Response(error.message, { status: 500 })
-    );
+    event.respondWith(new Response("Internal Server Error", { status: 500 }));
   }
 });
