@@ -55,7 +55,7 @@ addEventListener("fetch", async (event) => {
 
     const otpCode = await generateCurrentOtp(secret);
     event.respondWith(
-      new Response(JSON.stringify({ otp: otpCode }), {
+      new Response(JSON.stringify({ otp: otpCode.replace(/\s+/g, "") }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       })
